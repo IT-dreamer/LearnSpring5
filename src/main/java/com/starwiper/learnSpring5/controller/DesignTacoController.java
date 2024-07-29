@@ -6,8 +6,11 @@ import com.starwiper.learnSpring5.model.Taco;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,9 +40,7 @@ public class DesignTacoController {
 
     Type[] types = Ingredient.Type.values();
     for (Type type : types) {
-      //List<Ingredient> filteredIngredients = filterByType(ingredients, type);
       model.addAttribute(type.toString().toLowerCase(), filterByType(ingredients, type));
-      //System.out.println("Added " + type.toString().toLowerCase() + ": " + filteredIngredients);
     }
 
     model.addAttribute("design", new Taco());
@@ -47,7 +48,12 @@ public class DesignTacoController {
   }
 
   @PostMapping
-  public String processDesign(Taco design) {
+  public String processDesign(@Valid Taco design, Errors errors) {
+    if(errors.hasErrors()) {
+      System.out.println("Error: " + errors.getAllErrors().stream().map(Object::toString).collect(Collectors.joining(", ")));
+      return "design";
+    }
+
     log.info("Process design: " + design);
     return "redirect:/orders/current";
   }
